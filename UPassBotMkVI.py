@@ -2,13 +2,18 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from Tkinter import *
 import Tkinter as tk
+import os
+import datetime
+import win32com.client
 
-
-with open('backup') as f:
-    lines = [line.rstrip('\n') for line in open('backup')]
-    data = lines
-    print(data)
-    f.close
+try:
+    with open('backup') as f:
+        lines = [line.rstrip('\n') for line in open('backup')]
+        data = lines
+        #print(data)
+        f.close
+except:
+    pass
 
 # Finds date for text msg
 import datetime
@@ -44,40 +49,47 @@ OPTIONS = [
 #"Choose University",
 "Simon Fraser University",
 "University of British Columbia",
-"British Columbia Institute of Columbia",
+"British Columbia Institute of Technology",
 "Douglas College",
 "Kwantlen Polytechnic University"
 
 ] #etc
 
-account_sid = 'INSERT_SID'
-auth_token = 'INSERT_AUTHTOKEN'
+account_sid = '<ACCOUNTSID>'
+auth_token = '<AUTHTOKEN>'
 client = Client(account_sid, auth_token)
 
 def handler():
-    print("Entering Handller...")
+    #print("Entering Handller...")
     f = open("backup", "w")
-    print("Writing...")
+    #print("Writing...")
     f.write(entry_username.get())
-    print("Writing...")
+    #print("Writing...")
     f.write("\n")
     f.write(entry_password.get())
-    print("Writing...")
+    #print("Writing...")
     f.write("\n")
     f.write(entry_number.get())
-    print("Writing...")
+    #print("Writing...")
     f.write("\n")
     f.write(variable.get())
+    print(str(variable.get()))
+    f.write("\n")
+    val = str(var.get())
+    #print(str(val))
+    print(val)
+    f.write(val)
     f.close()
-    print("Quiting...")
+    #print("Quiting...")
+
     root.destroy()
-    
-    
+
+
 def renew():
     options = webdriver.ChromeOptions()
     options.add_argument("--start-maximized")
 
-    driver = webdriver.Chrome('C:/Users/vakil/Documents/chromedriver_win32/chromedriver.exe') 
+    driver = webdriver.Chrome('chromedriver.exe')
     driver.get("https://upassbc.translink.ca/")
     school = str(variable.get())
     option_visible_text = school
@@ -85,7 +97,7 @@ def renew():
 
 
 
-    #now use this to select option from dropdown by visible text 
+    #now use this to select option from dropdown by visible text
     driver.execute_script("var select = arguments[0]; for(var i = 0; i < select.options.length; i++){ if(select.options[i].text == arguments[1]){ select.options[i].selected = true; } }", select, option_visible_text);
     driver.find_element_by_name("PsiId").send_keys(Keys.RETURN)
     driver.find_element_by_name("PsiId").send_keys(Keys.RETURN)
@@ -111,7 +123,7 @@ def renew():
     message = client.messages \
     .create(
     body="Your Compass Card for " + month + " has been renewed!",
-    from_='INSERT_TWILIONUMBER',
+    from_='<TWILIONUMBER>,
     to= "+1" + str(number)
     )
 
@@ -125,14 +137,14 @@ def text_test():
     number = entry_number.get()
     print(number)
     # Your Account Sid and Auth Token from twilio.com/console
-    account_sid = 'INSERTSID'
-    auth_token = 'INSERTAUTHTOKEN'
+    account_sid = '<ACCOUNTSID>'
+    auth_token = '<AUTHTOKEN'
     client = Client(account_sid, auth_token)
 
     message = client.messages \
                 .create(
                      body="Your Compass Card for " + month + " has been renewed!",
-                     from_='TWILIONUMBER',
+                     from_='<TWILIONUMBER>',
                      to= "+1" + str(number)
                  )
 
@@ -142,7 +154,7 @@ def text_test():
 
 
 
-                     
+
 root = tk.Tk()
 root.title("Compass Card Bot")
 label1 = tk.Label(root, text="Username:")
@@ -153,13 +165,37 @@ entry_password = tk.Entry(root,show='*')
 entry_number= tk.Entry(root)
 entry_username = tk.Entry(root)
 variable = StringVar(root)
+try:
+    entry_username.insert(0, data[0])
+    entry_password.insert(0, data[1])
+    entry_number.insert(0, data[2])
+
+except:
+    pass
+
+
 variable.set("Choose A University") # default value
 w = OptionMenu(root, variable, *OPTIONS)
 w.pack()
+var = IntVar()
+c = Checkbutton(root, text="Auto-Renew every Month", variable=var)
+c.pack()
 label1.pack()
 label2.pack()
 label3.pack()
 label4.pack()
+try:
+    var.set(int(data[4]))
+except:
+    print("ERROR")
+    pass
+try:
+    variable.set(str(data[3]))
+except:
+    print("ERROR")
+    pass
+if var == 1:
+    print("TRUE")
 #counter_label(label)
 button = tk.Button(root, text='Renew Compass Card',width=25, command= lambda: renew())
 label1.grid(row=0, column=0)
@@ -170,6 +206,7 @@ entry_username.grid(row=0, column=1)
 entry_password.grid(row=1, column=1)
 entry_number.grid(row=2, column=1)
 w.grid(row=3,column=1)
+c.grid(row=0,column=2)
 button.grid(row=6,column=1)
 root.protocol("WM_DELETE_WINDOW", handler)
 root.mainloop()
